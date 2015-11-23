@@ -34,6 +34,7 @@ def test_generator(contest_id, problem, test_num):
 
 def download_contest(contest_id, problem):
     url = "http://codeforces.com/contest/{contest}/problem/{problem}".format(contest=contest_id, problem=problem)
+    print "Downloading url = ", url
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
     html_inputs = soup.find_all('div', attrs={'class': 'input'})
@@ -70,24 +71,28 @@ def create_files(contest_id, problem):
     # create directory with contest_id
     dir_name = str(contest_id)
     if not os.path.exists(dir_name):
+        print "Create directory: ", dir_name
         os.mkdir(dir_name)
 
     # create file if not exists
     src_file = SRC_FORMAT.format(contest_id=contest_id, problem=problem)
     if not os.path.isfile(src_file):
+        print "Create source file: ", src_file
         with os.fdopen(os.open(src_file, os.O_WRONLY | os.O_CREAT, 0777), 'w') as fd:
             fd.write(SRC_TEMPLATE)
 
     # create test files.
-    # fixme => should only if not exists
+    # fixme => should only if not exists (maybe?)
     test_cases = download_contest(contest_id, problem)
 
     for test_num, (formatted_input, formatted_output) in enumerate(test_cases):
         in_file = IN_FORMAT.format(contest_id=contest_id, problem=problem, test_num=test_num)
         with open(in_file, 'w') as f:
+            print "Create input file: ", in_file
             f.write(formatted_input)
         out_file = OUT_FORMAT.format(contest_id=contest_id, problem=problem, test_num=test_num)
         with open(out_file, 'w') as f:
+            print "Create output file: ", out_file
             f.write(formatted_output)
 
     return test_cases
@@ -95,6 +100,7 @@ def create_files(contest_id, problem):
 
 def get_problems(contest_id):
     contest_url = "http://codeforces.com/contest/{contest}".format(contest=contest_id)
+    print "Downloading contest url: ", contest_url
     response = requests.get(contest_url)
     soup = BeautifulSoup(response.text, "html.parser")
     problem_ids = soup.find_all('td', attrs={'class': 'id'})
